@@ -1,4 +1,5 @@
 # coding: utf-8
+# python video_test.py /home/zhou/deeplearning/YOLOv3_TensorFlow-master/data/demo_data/iCAS_Video/video_a.mp4 --anchor_path data/kitti_anchors.txt --class_name_path misc/kitti.names --restore_path checkpoint/model-epoch_90_step_37309_loss_1.1642_lr_1e-05
 
 from __future__ import division, print_function
 
@@ -28,7 +29,7 @@ parser.add_argument("--class_name_path", type=str, default="./data/coco.names",
                     help="The path of the class names.")
 parser.add_argument("--restore_path", type=str, default="./data/darknet_weights/yolov3.ckpt",
                     help="The path of the weights to restore.")
-parser.add_argument("--save_video", type=lambda x: (str(x).lower() == 'true'), default=False,
+parser.add_argument("--save_video", type=lambda x: (str(x).lower() == 'true'), default=True,
                     help="Whether to save the video detection results.")
 args = parser.parse_args()
 
@@ -39,10 +40,13 @@ args.num_class = len(args.classes)
 color_table = get_color_table(args.num_class)
 
 vid = cv2.VideoCapture(args.input_video)
+# vid = cv2.VideoCapture(0)
 video_frame_cnt = int(vid.get(7))
 video_width = int(vid.get(3))
 video_height = int(vid.get(4))
 video_fps = int(vid.get(5))
+#print('########', video_frame_cnt)
+
 
 if args.save_video:
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
@@ -61,9 +65,14 @@ with tf.Session() as sess:
 
     saver = tf.train.Saver()
     saver.restore(sess, args.restore_path)
-
+    
+    #j = 0
     for i in range(video_frame_cnt):
+    #    j = j+1
+     #   print('j:', j)
         ret, img_ori = vid.read()
+        if ret == False:
+            break
         if args.letterbox_resize:
             img, resize_ratio, dw, dh = letterbox_resize(img_ori, args.new_size[0], args.new_size[1])
         else:
